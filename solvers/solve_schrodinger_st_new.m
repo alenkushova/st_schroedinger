@@ -1,11 +1,11 @@
-% SOLVE_SCHRODINGER_ST: Solve a Schrodinger problem with a B-spline
+% SOLVE_SCHRODINGER_ST_New: Solve a Schrodinger problem with a B-spline
 %                               discretization in a space-time isoparametric
 %                               approach . 
 %
 % The function solves the evolution problem
 %
-%     i d_t (u) - d_x( d_x (u)) = f    in Omega = F((0,1)^(n+1)) 
-%                             u = g    on Omega_0 = F((0,1)^n x {0})
+%     i d_t (u) - d_x( d_x (u)) = f    in Omega = F((0,1)^(1+1)) 
+%                             u = g    on Omega_0 = F((0,1)^1 x {0})
 %                             u = h    on Gamma_D
 %
 % USAGE:
@@ -44,7 +44,7 @@
 % See also EX_SCHRODINGER_A or EX_SCHRODINGER_B for examples.
 %
 function [GEO, MSH, SPACE, u] = ...
-              solve_schrodinger_st (problem_data, method_data)
+              solve_schrodinger_st_new (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
 data_names = fieldnames (problem_data);
@@ -58,15 +58,17 @@ end
 
 %Construct 1d geometry structures
 % Construct geometry
-geometry = geo_load(geo_name);
+x_geometry = geo_load(geo_name);
+t_geometry = geo_load(nrbline ([0 0], [T 0]));
 
-[knots, zeta]= kntrefine(geometry.nurbs.knots, nsub-1, degree, regularity);
+[knots, zeta]= kntrefine(x_geometry.nurbs.knots, nsub-1, degree, regularity);
+[times, tau] = kntrefine(t_geometry.nurbs.knots, nsub-1, degree, regularity); %specify time knots in example hence change this
 knots = kntunclamp(knots, degree, regularity, prdc_sides);
 
 % Construct msh structure
 rule     = msh_gauss_nodes (nquad);
 [qn, qw] = msh_set_quad_nodes (zeta, rule);
-msh      = msh_cartesian (zeta, qn, qw, geometry);
+msh      = msh_cartesian (zeta, qn, qw, x_geometry);
 
 % Construct space structure
 space_t = sp_bspline (knots, degree, msh);
