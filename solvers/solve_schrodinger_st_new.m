@@ -4,13 +4,13 @@
 %
 % The function solves the evolution problem
 %
-%     i d_t (u) - d_x( d_x (u)) = f    in Omega = F((0,1)^(1+1)) 
-%                             u = g    on Omega_0 = F((0,1)^1 x {0})
+%     i d_t (u) - d_x( d_x (u)) = f    in Omega   = (0,1)^d x [0,T] 
+%                             u = g    on Omega_0 = (0,1)^d x {0}
 %                             u = h    on Gamma_D
 %
 % USAGE:
 %
-%  [geometry, msh, space, u] = solve_schrodinger_st (problem_data, method_data)
+%  [geometry, msh, space, u] = solve_schrodinger_st_new (problem_data, method_data)
 %
 % INPUT:
 %
@@ -22,12 +22,11 @@
 %    - f:            source term
 %    - g:            function for Neumann boundary condition (if needed)
 %    - h:            function for Dirichlet boundary condition (also initial)
-%    - dimension:    dimension of the space variable (JUST 1 FOR NOW!!!!!!!!!!!!!!!!!!!!!!!!!!)
-%    - T:            final time
+%    - T:            final time T = 10 by default specified in Geo file
 %
 %  method_data : a structure with discretization data. Its fields are:
-%    - degree:     degree of the spline functions.
-%    - regularity: continuity of the spline functions.
+%    - degree:     degree of the spline functions
+%    - regularity: continuity of the spline functions
 %    - nsub:       number of subelements with respect to the geometry mesh 
 %                   (nsub=1 leaves the mesh unchanged)
 %    - nquad:      number of points for Gaussian quadrature rule
@@ -43,7 +42,7 @@
 %
 % See also EX_SCHRODINGER_A or EX_SCHRODINGER_B for examples.
 %
-function [GEO, MSH, SPACE, u] = ...
+function [geometry, msh, space, u] = ...
               solve_schrodinger_st_new (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
@@ -58,60 +57,52 @@ end
 
 %Construct 1d geometry structures
 % Construct geometry
-x_geometry = geo_load(geo_name);
-t_geometry = geo_load(nrbline ([0 0], [T 0]));
+geometry = geo_load(xt_geo_name);
+x_geo    = geo_load(x_geo_name);
+t_geo    = geo_load(t_geo_name);
 
-[knots, zeta]= kntrefine(x_geometry.nurbs.knots, nsub-1, degree, regularity);
-[times, tau] = kntrefine(t_geometry.nurbs.knots, nsub-1, degree, regularity); %specify time knots in example hence change this
+[knots, zeta]= kntrefine(geometry.nurbs.knots, nsub-1, degree, regularity);
 knots = kntunclamp(knots, degree, regularity, prdc_sides);
+
+[x_knots, x_zeta]= kntrefine(x_geo.nurbs.knots,...
+                    nsub(1:end-1)-1, degree(1:end-1), regularity(1:end-1));
+x_knots = kntunclamp(x_knots, degree(1:end-1), regularity(1:end-1), prdc_sides);
+
+[t_knots, t_zeta]= kntrefine(t_geo.nurbs.knots,...
+                    nsub(end)-1, degree(end), regularity(end));
+t_knots = kntunclamp(t_knots, degree(end), regularity(end), prdc_sides);
 
 % Construct msh structure
 rule     = msh_gauss_nodes (nquad);
 [qn, qw] = msh_set_quad_nodes (zeta, rule);
-msh      = msh_cartesian (zeta, qn, qw, x_geometry);
+msh      = msh_cartesian (zeta, qn, qw, geometry);
 
-% Construct space structure
-space_t = sp_bspline (knots, degree, msh);
-space_s = sp_bspline (knots, degree, msh);
+[xqn, xqw] = msh_set_quad_nodes (x_zeta, rule(1:end-1));
+x_msh   = msh_cartesian (x_zeta, xqn, xqw, x_geo);
 
-% Tensorize all one dimentional spaces: (modify to deal with higher dim)
-% NMNN_sides   = []; % Global Neumann 
-DRCHLT_sides = [1 2 3];  % Global Dirichlet
+[tqn, tqw] = msh_set_quad_nodes (t_zeta, rule(end));
+t_msh   = msh_cartesian (t_zeta, tqn, tqw, t_geo);
 
-% Construct geometry
-DEGREE = degree      * ones(1,dimension + 1);
-REG    = regularity  * ones(1,dimension + 1);
-NSUB   = nsub        * ones(1,dimension + 1);
-NQUAD  = nquad       * ones(1,dimension + 1);
-
-GEO    = geo_load('geo_square.txt');
-
-[KNOTS, ZETA]= kntrefine(GEO.nurbs.knots, NSUB-1, DEGREE, REG);
-KNOTS  = kntunclamp(KNOTS, DEGREE, REG, []); 
-
-% Construct global msh structure
-RULE     = msh_gauss_nodes (NQUAD);
-[QN, QW] = msh_set_quad_nodes (ZETA, RULE);
-MSH      = msh_cartesian (ZETA, QN, QW, GEO);
-
-% Construct global space structure
-SPACE = sp_bspline (KNOTS, DEGREE, MSH);
+% Construct the space structure
+space   = sp_bspline (knots, degree, msh);
+x_space = sp_bspline (x_knots, degree(1:end-1), x_msh);
+t_space = sp_bspline (t_knots, degree(end), t_msh);
 
 % Assembly the matrices
-Wt = op_gradu_v_tp     (space_t, space_t, msh); %Controllo come è fatto!
+Wt = op_gradu_v_tp (t_space, t_space, t_msh); %Controllo come è fatto!
 Wt = Wt';
-Mt = op_u_v_tp         (space_t,space_t,msh);
-Mt = T*Mt; 
-Ms = op_u_v_tp         (space_s,space_s,msh);
-Ks = op_gradu_gradv_tp (space_s, space_s, msh);
+Mt = T*op_u_v_tp (t_space, t_space, t_msh);
+Ms = op_u_v_tp (x_space, x_space, x_msh);
+Ks = op_gradu_gradv_tp (x_space, x_space, x_msh);
 A = 1i*kron(Wt,Ms)+kron(Mt,Ks);
-F = op_f_v_tp (SPACE, MSH, f); %here is the projection of f.
-
+%F = ones(size(A,1),1);
+F = op_f_v_tp (space, msh, f); %here is the projection of f.
+ 
 % Apply Dirichlet bpoundary conditions
-u = zeros (SPACE.ndof, 1);
-[u_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (SPACE, MSH, h, DRCHLT_sides);
+u = zeros (space.ndof, 1);
+[u_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space, msh, h, drchlt_sides);
 u(drchlt_dofs) = u_drchlt;
-int_dofs = setdiff (1:SPACE.ndof, drchlt_dofs);
+int_dofs = setdiff (1:space.ndof, drchlt_dofs);
 F(int_dofs) = F(int_dofs) - A(int_dofs, drchlt_dofs)*u_drchlt; %modify rhs.
 
 switch solver
