@@ -104,22 +104,24 @@ u = zeros (space.ndof, 1);
 u(drchlt_dofs) = u_drchlt;
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);
 F(int_dofs) = F(int_dofs) - A(int_dofs, drchlt_dofs)*u_drchlt; %modify rhs.
+[~, x_drchlt_dofs] = sp_drchlt_l2_proj (x_space, x_msh, x_h, x_drchlt_sides);
+x_int_dofs = setdiff (1:x_space.ndof, x_drchlt_dofs);
 
 switch solver
     case 'FD'
         % With the preconditioner:
-        Wt   = Wt(2:end,2:end);% W - time
-        Mt   = Mt(2:end,2:end);% Mass in time
+        Wt = Wt(2:end,2:end);% W - time
+        Mt = Mt(2:end,2:end);% Mass in time
         Mt = (Mt+Mt')/2; %symmetrize
-        Wt0  = Wt(1:end-1,1:end-1);
-        w    = Wt(1:end-1,end);
+        Wt0= Wt(1:end-1,1:end-1);
+        w  = Wt(1:end-1,end);
         %omega= Wt(end,end);
-        Mt0  = Mt(1:end-1,1:end-1);
-        m    = Mt(1:end-1,end); 
-        %mu   = Mt(end,end);
-        Ms   = Ms(2:end-1,2:end-1); % Stiff in space
+        Mt0= Mt(1:end-1,1:end-1);
+        m  = Mt(1:end-1,end); 
+        %mu = Mt(end,end);
+        Ms = Ms(x_int_dofs,x_int_dofs); % Mass in space
         Ms = (Ms+Ms')/2; %symmetrize
-        Ks = Ks(2:end-1,2:end-1); % Mass in space  
+        Ks = Ks(x_int_dofs,x_int_dofs); % Stiff in space  
         Ks = (Ks+Ks')/2; %symmetrize
 
         % Generalized diagonalizations:

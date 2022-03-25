@@ -16,10 +16,10 @@ problem_data.t_geo_name = nrbline ([0 0], [1 0]);
 
 % Type of boundary conditions for each side of the domain
 
-problem_data.nmnn_sides   = []; % Neumann 
-problem_data.drchlt_sides = [1 2 3 4 5];  % Dirichlet
-problem_data.prdc_sides   = []; % Periodic
-%problem_data.h = @(x, y, t, ind) zeros (size (x));
+problem_data.nmnn_sides     = []; % Neumann 
+problem_data.drchlt_sides   = [1 2 3 4 5];  % Dirichlet
+problem_data.x_drchlt_sides = [1 2 3 4];  % Dirichlet
+problem_data.prdc_sides     = []; % Periodic
 
 % Parameters:
 omg = 0.2;
@@ -35,13 +35,14 @@ problem_data.graduex = @(x, y, t) (cat (1, ...
 problem_data.f = @(x, y, t) ...
             (4i*omg^2 + 4*x.^2 + 4*y.^2 + 2*omg^2*t)/omg^4.*problem_data.uex(x, y, t);
 problem_data.h = @(x, y, t, ind) problem_data.uex(x, y, t);
+problem_data.x_h = @(x, y, ind) zeros (size (x)); % auxiliary function. 
 
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
-method_data.degree     = [3 3 3]; % Degree of the splines (last is time dir)
+method_data.degree     = [7 7 7]; % Degree of the splines (last is time dir)
 method_data.regularity = method_data.degree-1; % Regularity of the splines
-method_data.nsub       = [32 32 32]; % Number of subdivisions
+method_data.nsub       = [16 16 16]; % Number of subdivisions
 method_data.nquad      = [4 4 4]; % Points for the Gaussian quadrature rule
 method_data.solver     = 'M';     % Fast Diag 'FD' or Matlab Backslash 'M'
 
@@ -51,11 +52,11 @@ method_data.solver     = 'M';     % Fast Diag 'FD' or Matlab Backslash 'M'
 %% 4) POST-PROCESSING
 % 4.1) EXPORT TO PARAVIEW
 
-% output_file = 'Schroedinger_st_2D_BSP_Deg3_Reg2_Sub8';
+output_file = 'Schroedinger_st_2D_BSP_Deg3_Reg2_Sub8';
 
-% vtk_pts = {linspace(0, 1, 20), linspace(0, 1, 20), linspace(0, 1, 20)};
-% fprintf ('The result is saved in the file %s \n \n', output_file);
-% sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
+vtk_pts = {linspace(0, 1, 20), linspace(0, 1, 20), linspace(0, 1, 20)};
+fprintf ('The result is saved in the file %s \n \n', output_file);
+sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
 
 figure
 sp_plot_solution (real(u), space, geometry, [40 40 40], [20 20 20]);
