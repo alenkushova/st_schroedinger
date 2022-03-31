@@ -91,7 +91,7 @@ t_space = sp_bspline (t_knots, degree(end), t_msh);
 % Assembly the matrices
 Wt = op_gradu_v_tp (t_space, t_space, t_msh); %Controllo come è fatto!
 Wt = Wt';
-Mt = T*op_u_v_tp (t_space, t_space, t_msh);
+Mt = op_u_v_tp (t_space, t_space, t_msh);
 Ms = op_u_v_tp (x_space, x_space, x_msh);
 Ks = op_gradu_gradv_tp (x_space, x_space, x_msh);
 A = 1i*kron(Wt,Ms)+kron(Mt,Ks);
