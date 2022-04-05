@@ -158,13 +158,26 @@ switch solver
         %here is the arrow like decomposition
         Ut = [Ut0 r;0*r' rho];
         Lambda= sparse([diag(Dt0) g; -g' sigma]);
-        U     = kron(Ut,Us);
+% MUST NOT USE THIS:
+%        U     = kron(Ut,Us); %huge worning here!!!!!
         Arrow = 1i*kron(Lambda,eye(size(Ds,1)))+kron(eye(size(Lambda,1)),Ds);
 
         % Solve the system:
+% OLD        
         tilde_F = U'*F(int_dofs); %STEP 2
         tilde_u = Arrow\tilde_F; % STEP 3 
         u(int_dofs) = U*tilde_u; % STEP 4 - Num. solution for Schrodinger
+% New: based on__ (A \otimes B) vec(X) = BXA' _________CHECK!_______________________
+        n1 = size(Ut,1);
+        n2 = size(Us,1);
+        Fnew = reshape(F(int_dofs),n2,n1);
+%scritto così perchè c'è da fare attenzione con trasposti e coniugi:
+        tilde_Fnew = Us'*Fnew*((Ut').'); %STEP 2
+        tilde_u = Arrow\tilde_Fnew(:); % STEP 3 
+        tilde_u = reshape(tilde_u,n2,n1);
+        u_sol = tmprod(tilde_u,{Ut Us},[2 1]);% STEP 4 
+        u(int_dofs) = u_sol; % Numerical solution for Schrodinger.
+        
     case 'M'
         u(int_dofs) = A(int_dofs,int_dofs)\F(int_dofs);
     otherwise
