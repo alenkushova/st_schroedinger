@@ -43,9 +43,9 @@ problem_data.x_h = @(x, ind) zeros (size (x)); % auxiliary function.
 clear method_data
 method_data.degree     = [3 3]; % Degree of the splines (last is time dir)
 method_data.regularity = method_data.degree-1; % Regularity of the splines
-method_data.nsub       = [16 16]; % Number of subdivisions
+method_data.nsub       = [64 64]; % Number of subdivisions
 method_data.nquad      = [4 4]; % Points for the Gaussian quadrature rule
-method_data.solver     = 'FD';     % Fast Diag 'FD' or Matlab Backslash 'M'
+method_data.solver     = 'M';     % Fast Diag 'FD' or Matlab Backslash 'M'
 
 %% 3) CALL TO THE SOLVER
 [geometry, msh, space, u] = solve_schrodinger_st_new (problem_data, method_data);

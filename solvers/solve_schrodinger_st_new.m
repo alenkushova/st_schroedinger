@@ -160,21 +160,33 @@ switch solver
         Lambda= sparse([diag(Dt0) g; -g' sigma]);
 % MUST NOT USE THIS:
 %        U     = kron(Ut,Us); %huge worning here!!!!!
-        Arrow = 1i*kron(Lambda,eye(size(Ds,1)))+kron(eye(size(Lambda,1)),Ds);
-
+%        Arrow = 1i*kron(Lambda,eye(size(Ds,1)))+kron(eye(size(Lambda,1)),Ds);
+% Instead of the kronecker products i can assemble this diagonal matrices
+% hence 'vectros' that can perform easily the computations needed:
+        Ns  = size(Ds,1);
+        nt  = size(Lambda,1);
+        Ids = ones(Ns,1);
+        ds  = diag(Ds);
+        H   = 1i*diag(Lambda).'+ds;
+        B   = 1i*(g.').*Ids;
+        S   = H(:,nt)+ sum((((B').')./H(:,1:nt-1)).*B,2);
         % Solve the system:
 % OLD        
-        tilde_F = U'*F(int_dofs); %STEP 2
-        tilde_u = Arrow\tilde_F; % STEP 3 
-        u(int_dofs) = U*tilde_u; % STEP 4 - Num. solution for Schrodinger
+%         tilde_F = U'*F(int_dofs); %STEP 2
+%         tilde_u = Arrow\tilde_F; % STEP 3 
+%         u(int_dofs) = U*tilde_u; % STEP 4 - Num. solution for Schrodinger
 % New: based on__ (A \otimes B) vec(X) = BXA' _________CHECK!_______________________
         n1 = size(Ut,1);
         n2 = size(Us,1);
         Fnew = reshape(F(int_dofs),n2,n1);
 %scritto così perchè c'è da fare attenzione con trasposti e coniugi:
         tilde_Fnew = Us'*Fnew*((Ut').'); %STEP 2
-        tilde_u = Arrow\tilde_Fnew(:); % STEP 3 
-        tilde_u = reshape(tilde_u,n2,n1);
+%        tilde_u = Arrow\tilde_Fnew(:); % STEP 3, old one! new version
+%        below...
+        tilde_u_nt = (sum((((B').')./H(:,1:nt-1)).*tilde_Fnew(:,1:nt-1),2)...
+                     + tilde_Fnew(:,nt))./S;
+        tilde_u = [(tilde_Fnew(:,1:nt-1)-B.*tilde_u_nt)./H(:,1:nt-1) tilde_u_nt];
+        tilde_u = reshape(tilde_u,n2,n1); %non dovrebbe servire.
         u_sol = tmprod(tilde_u,{Ut Us},[2 1]);% STEP 4 
         u(int_dofs) = u_sol; % Numerical solution for Schrodinger.
         
