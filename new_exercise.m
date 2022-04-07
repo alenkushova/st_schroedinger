@@ -37,6 +37,8 @@ problem_data.f = @(x, t) ...
             (2i*omg^2 + 4*x.^2 + 2*omg^2*t)/omg^4.*problem_data.uex(x,t);
 problem_data.h = @(x, t, ind) problem_data.uex(x,t);
 problem_data.x_h = @(x, ind) zeros (size (x)); % auxiliary function. 
+problem_data.gmm = 1i;
+problem_data.eta = 1;
 
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
@@ -45,7 +47,7 @@ method_data.degree     = [3 3]; % Degree of the splines (last is time dir)
 method_data.regularity = method_data.degree-1; % Regularity of the splines
 method_data.nsub       = [64 64]; % Number of subdivisions
 method_data.nquad      = [4 4]; % Points for the Gaussian quadrature rule
-method_data.solver     = 'M';     % Fast Diag 'FD' or Matlab Backslash 'M'
+method_data.solver     = 'FD';     % Fast Diag 'FD' or Matlab Backslash 'M'
 
 %% 3) CALL TO THE SOLVER
 [geometry, msh, space, u] = solve_schrodinger_st_new (problem_data, method_data);
