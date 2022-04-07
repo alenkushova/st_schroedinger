@@ -158,68 +158,35 @@ switch solver
         %here is the arrow like decomposition
         Ut = [Ut0 r;0*r' rho];
         Lambda= sparse([diag(Dt0) g; -g' sigma]); 
-% MUST NOT USE THIS:
-        U     = kron(Ut,Us); %huge worning here!!!!!
-        Arrow = gmm*kron(Lambda,eye(size(Ds,1)))+eta*kron(eye(size(Lambda,1)),Ds);
-% Solve the system:
-        sol1 = U'*F(int_dofs); %STEP 2
-        sol2 = Arrow\sol1; % STEP 3 
-        u(int_dofs) = U*sol2; % STEP 4 - Num. solution for Schrodinger
-
-%% Tentativo N°1:
-%         nt = size(Ut,1);
-%         Ns = size(Us,1);
-%         Ids = speye(Ns,Ns);
-%         ds  = sparse(Ds);
-%         Fnew = reshape(F(int_dofs),Ns,nt);
-% % apply the generalized eigenvector matrix _________________ STEP 2 
-%         tilde_Fnew = Us'*Fnew*((Ut').'); 
-% % solve the arrow like system ______________________________ STEP 3 this
-% step may have errors inside
-%         S = 0;
-%         rhs = 0;
-%         for i = 1 : nt-1
-%             H = gmm*Lambda(i,i)*Ids+eta*ds;
-%             B = gmm*g(i)*Ids;
-%             rhs = rhs + B'*(H\tilde_Fnew(:,i));
-%             S = S + B'*(H\B);           
-%         end
-%         rhs = rhs + tilde_Fnew(:,nt);
-%         Hnt = gmm*sigma*Ids+eta*ds;
-%         S = S + Hnt; 
-%         tilde_u_nt = S\rhs;
-%         tilde_u = zeros(Ns,nt);
-%         tilde_u(:,nt) = tilde_u_nt;
-%         for i = nt-1: -1: 1 
-%             H = gmm*Lambda(i,i)*Ids+eta*ds;
-%             B = gmm*g(i)*Ids;
-%             tilde_u(:,i) = H\(tilde_Fnew(:,i) - B*tilde_u_nt);
-%         end
-% % apply the generalized eigenvector matrix _________________ STEP 4
-%         tilde_u = reshape(tilde_u,Ns,nt); %non dovrebbe servire.
-%         u_sol = tmprod(tilde_u,{Ut Us},[2 1]);
-%         u(int_dofs) = u_sol; % Numerical solution for Schrodinger.
         
-%% Tentativo N°2: the one I like the most!
-%         nt = size(Ut,1);
-%         Ns = size(Us,1);
-%         Ids = ones(Ns,1);
-%         ds  = diag(Ds);
-%         H   = gmm*diag(Lambda).'+eta*ds;
-%         B   = gmm*(g.').*Ids;
-%         S   = spdiags(H(:,nt)+ sum((((B').')./H(:,1:nt-1)).*B,2),0,Ns,Ns);
-%         Fnew = reshape(F(int_dofs),Ns,nt);
-% % apply the generalized eigenvector matrix _________________ STEP 2 
-%         tilde_Fnew = Us'*Fnew*((Ut').'); 
-% % solve the arrow like system ______________________________ STEP 3 
-%         tilde_u_nt = (sum((((B').').*tilde_Fnew(:,1:nt-1)./H(:,1:nt-1)),2)...
-%                      + tilde_Fnew(:,nt))./S; % check for errors
-%         tilde_u = [(tilde_Fnew(:,1:nt-1)-B.*tilde_u_nt)./H(:,1:nt-1)...
-%         tilde_u_nt]; % check for errors here
-% % apply the generalized eigenvector matrix _________________ STEP 4
-%         tilde_u = reshape(tilde_u,Ns,nt); %non dovrebbe servire.
-%         u_sol = tmprod(tilde_u,{Ut Us},[2 1]);
-%         u(int_dofs) = u_sol; % Numerical solution for Schrodinger.
+% % MUST NOT USE THIS:
+%        U     = kron(Ut,Us); %huge worning here!!!!!
+%        Arrow = gmm*kron(Lambda,speye(size(Ds,1)))...
+%                       +eta*kron(speye(size(Lambda,1)),sparse(Ds));
+% % Solve the system:
+%         sol1 = U'*F(int_dofs); %STEP 2
+%         sol2 = Arrow\sol1; % STEP 3 
+%         u(int_dofs) = U*sol2; % STEP 4 - Num. solution for Schrodinger
+        
+        nt = size(Ut,1);
+        Ns = size(Us,1);
+        Ids = ones(Ns,1);
+        ds  = diag(Ds);
+        H   = gmm*diag(Lambda).'+eta*ds;
+        B   = gmm*(g.').*Ids;
+        S   = H(:,nt) - sum((((B').')./H(:,1:nt-1)).*B,2);
+        Fnew = reshape(F(int_dofs),Ns,nt);
+% apply the generalized eigenvector matrix _________________ STEP 2 
+        tilde_Fnew = Us'*Fnew*((Ut').'); 
+% solve the arrow like system ______________________________ STEP 3 
+        tilde_u_nt = (-sum((((B').').*tilde_Fnew(:,1:nt-1)./H(:,1:nt-1)),2)...
+                     + tilde_Fnew(:,nt))./S;
+        tilde_u = [(tilde_Fnew(:,1:nt-1)-B.*tilde_u_nt)./H(:,1:nt-1) tilde_u_nt];
+        %tilde_u = Arrow\tilde_Fnew(:); This works for sure
+% apply the generalized eigenvector matrix _________________ STEP 4
+        tilde_u = reshape(tilde_u,Ns,nt); %non dovrebbe servire.
+        u_sol = tmprod(tilde_u,{Ut Us},[2 1]);
+        u(int_dofs) = u_sol; % Numerical solution for Schrodinger.
         
     case 'M'
         u(int_dofs) = A(int_dofs,int_dofs)\F(int_dofs);

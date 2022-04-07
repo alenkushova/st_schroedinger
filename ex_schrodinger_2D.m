@@ -38,13 +38,15 @@ problem_data.f = @(x, y, t) ...
             (4i*omg^2 + 4*x.^2 + 4*y.^2 + 2*omg^2*t)/omg^4.*problem_data.uex(x, y, t);
 problem_data.h = @(x, y, t, ind) problem_data.uex(x, y, t);
 problem_data.x_h = @(x, y, ind) zeros (size (x)); % auxiliary function. 
+problem_data.gmm = 1i;
+problem_data.eta = 1;
 
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
 method_data.degree     = [3 3 3]; % Degree of the splines (last is time dir)
 method_data.regularity = method_data.degree-1; % Regularity of the splines
-method_data.nsub       = [64 64 64]; % Number of subdivisions
+method_data.nsub       = [32 32 32]; % Number of subdivisions
 method_data.nquad      = [4 4 4]; % Points for the Gaussian quadrature rule
 method_data.solver     = 'FD';     % Fast Diag 'FD' or Matlab Backslash 'M'
 
@@ -55,11 +57,11 @@ toc
 %% 4) POST-PROCESSING
 % 4.1) EXPORT TO PARAVIEW
 
-output_file = 'Schroedinger_st_2D';
+% output_file = 'Schroedinger_st_2D';
 
 vtk_pts = {linspace(0, 1, 20), linspace(0, 1, 20), linspace(0, 1, 20)};
-fprintf ('The result is saved in the file %s \n \n', output_file);
-sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
+% fprintf ('The result is saved in the file %s \n \n', output_file);
+% sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
 
 figure
 sp_plot_solution (real(u), space, geometry, [40 40 40], [20 20 20]);
@@ -93,11 +95,11 @@ GradUex = @(x, y, t) real(problem_data.graduex(x, y, T*t));
 [error_h1, error_l2] = ...
            sp_h1_error (space, msh, real(u), Uex, GradUex)
 
-% 
-% %% 6) Save solution
-% n = method_data.nsub;
-% d = method_data.degree;
+
+%% 6) Save solution
+% n = method_data.nsub(1);
+% d = method_data.degree(1);
 % filename = ['test_schrodinger_degree_' num2str(d) '_subs_' num2str(n) '.mat'];
 % save(filename)
 % fprintf ('The result is saved in the file: %s \n \n', filename);
-% 
+
