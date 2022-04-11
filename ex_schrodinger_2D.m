@@ -46,8 +46,8 @@ problem_data.eta = 1;
 clear method_data
 method_data.degree     = [3 3 3]; % Degree of the splines (last is time dir)
 method_data.regularity = method_data.degree-1; % Regularity of the splines
-method_data.nsub       = [32 32 32]; % Number of subdivisions
-method_data.nquad      = [4 4 4]; % Points for the Gaussian quadrature rule
+method_data.nsub       = [8 8 8]; % Number of subdivisions
+method_data.nquad      = method_data.degree+1 ; % Points for the Gaussian quadrature rule
 method_data.solver     = 'FD';     % Fast Diag 'FD' or Matlab Backslash 'M'
 
 %% 3) CALL TO THE SOLVER
@@ -97,9 +97,9 @@ GradUex = @(x, y, t) real(problem_data.graduex(x, y, T*t));
 
 
 %% 6) Save solution
-% n = method_data.nsub(1);
-% d = method_data.degree(1);
-% filename = ['test_schrodinger_degree_' num2str(d) '_subs_' num2str(n) '.mat'];
-% save(filename)
-% fprintf ('The result is saved in the file: %s \n \n', filename);
+n = method_data.nsub(1);
+d = method_data.degree(1);
+filename = ['test_schrodinger_degree_' num2str(d) '_subs_' num2str(n) '.mat'];
+save(filename)
+fprintf ('The result is saved in the file: %s \n \n', filename);
 

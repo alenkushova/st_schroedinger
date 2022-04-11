@@ -94,7 +94,8 @@ Wt = Wt';
 Mt = op_u_v_tp (t_space, t_space, t_msh);
 Ms = op_u_v_tp (x_space, x_space, x_msh);
 Ks = op_gradu_gradv_tp (x_space, x_space, x_msh);
-A = gmm*kron(Wt,Ms)+eta*kron(Mt,Ks);
+% in  order to avoid this matrix implementation:
+%A = gmm*kron(Wt,Ms)+eta*kron(Mt,Ks);
 %F = ones(size(A,1),1);
 F = op_f_v_tp (space, msh, f); %here is the projection of f.
  
@@ -103,7 +104,11 @@ u = zeros (space.ndof, 1);
 [u_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space, msh, h, drchlt_sides);
 u(drchlt_dofs) = u_drchlt;
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);
-F(int_dofs) = F(int_dofs) - A(int_dofs, drchlt_dofs)*u_drchlt; %modify rhs.
+% we modify the rhs this way:
+mat_u = reshape(u,x_space.ndof,t_space.ndof);
+v1 = gmm*Ms*mat_u*(Wt.') + eta*Ks*mat_u*(Mt.');
+v1 = v1(:);
+F(int_dofs) = F(int_dofs) - v1(int_dofs); 
 [~, x_drchlt_dofs] = sp_drchlt_l2_proj (x_space, x_msh, x_h, x_drchlt_sides);
 x_int_dofs = setdiff (1:x_space.ndof, x_drchlt_dofs);
 

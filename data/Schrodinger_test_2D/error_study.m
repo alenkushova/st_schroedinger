@@ -1,7 +1,7 @@
 %% Analyze the errors into a plot!
 close all
 figure ('Units', 'pixels', 'Position', [150 200 1000 350])
-for d = 1 : 4
+for d = 1 : 5
     err_l2 = [];  NN = [];
 for i = 1 : 4
     N = 2^(i+2);
