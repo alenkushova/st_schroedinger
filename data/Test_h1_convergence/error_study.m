@@ -45,7 +45,7 @@ end
     grid on, hold on
     clear d s
 end
-legend('Location','southeast')
+legend('Location','southwest')
 %loglog(NN,(6*1./sqrt(NN)).^(d+1) ,'-s','Linewidth',1.5)
 title('Error convergence for solution with Fast Diagonalization')
 xlabel('h')
