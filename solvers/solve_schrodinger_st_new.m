@@ -54,9 +54,9 @@ data_names = fieldnames (method_data);
 for iopt  = 1:numel (data_names)
   eval ([data_names{iopt} '= method_data.(data_names{iopt});']);
 end
+n = numel(degree);
 
-%Construct 1d geometry structures
-% Construct geometry
+% Construct geometry structures
 geometry = geo_load(xt_geo_name);
 x_geo    = geo_load(x_geo_name);
 t_geo    = geo_load(t_geo_name);
@@ -65,14 +65,14 @@ t_geo    = geo_load(t_geo_name);
 knots = kntunclamp(knots, degree, regularity, prdc_sides);
 
 [x_knots, x_zeta]= kntrefine(x_geo.nurbs.knots,...
-                    nsub(1:end-1)-1, degree(1:end-1), regularity(1:end-1));
-x_knots = kntunclamp(x_knots, degree(1:end-1), regularity(1:end-1), prdc_sides);
+                    nsub(1:n-1)-1, degree(1:n-1), regularity(1:n-1));
+x_knots = kntunclamp(x_knots, degree(1:n-1), regularity(1:n-1), prdc_sides);
 
 [t_knots, t_zeta]= kntrefine(t_geo.nurbs.knots,...
-                    nsub(end)-1, degree(end), regularity(end));
-t_knots = kntunclamp(t_knots, degree(end), regularity(end), prdc_sides);
+                    nsub(n)-1, degree(n), regularity(n));
+t_knots = kntunclamp(t_knots, degree(n), regularity(n), prdc_sides);
 
-% Construct msh structure
+% Construct msh structures
 rule     = msh_gauss_nodes (nquad);
 [qn, qw] = msh_set_quad_nodes (zeta, rule);
 msh      = msh_cartesian (zeta, qn, qw, geometry);
@@ -83,10 +83,10 @@ x_msh   = msh_cartesian (x_zeta, xqn, xqw, x_geo);
 [tqn, tqw] = msh_set_quad_nodes (t_zeta, rule(end));
 t_msh   = msh_cartesian (t_zeta, tqn, tqw, t_geo);
 
-% Construct the space structure
+% Construct the space structures
 space   = sp_bspline (knots, degree, msh);
-x_space = sp_bspline (x_knots, degree(1:end-1), x_msh);
-t_space = sp_bspline (t_knots, degree(end), t_msh);
+x_space = sp_bspline (x_knots, degree(1:n-1), x_msh);
+t_space = sp_bspline (t_knots, degree(n), t_msh);
 
 % Assembly the matrices
 Wt = op_gradu_v_tp (t_space, t_space, t_msh); %Controllo come è fatto!
@@ -194,9 +194,11 @@ switch solver
         u(int_dofs) = u_sol; % Numerical solution for Schrodinger.
         
     case 'M'
+        A = gmm*kron(Wt,Ms)+eta*kron(Mt,Ks);
         u(int_dofs) = A(int_dofs,int_dofs)\F(int_dofs);
         
     otherwise
+        A = gmm*kron(Wt,Ms)+eta*kron(Mt,Ks);
         u(int_dofs) = A(int_dofs,int_dofs)\F(int_dofs);
 end
 
