@@ -43,8 +43,9 @@ problem_data.eta = 1;
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
+p = 3; % degree of B-splines
 n = 128; % number of subdivisions in space direction!
-method_data.degree     = [2 2]; % Degree of the splines (last is time dir)
+method_data.degree     = [p p]; % Degree of the splines (last is time dir)
 method_data.regularity = method_data.degree-1; % Regularity of the splines
 method_data.nsub       = [n T*n]; % Number of subdivisions
 method_data.nquad      = method_data.degree+1; % Points for the Gaussian quadrature rule
@@ -68,6 +69,7 @@ figure ('Units', 'pixels', 'Position', [150 200 1000 350])
 subplot (1,2,1)
 h1 = pcolor (X, Y, real(eu));
 colorbar
+colormap jet
 h1.EdgeColor = 'none';
 h1.FaceColor = 'interp';
 title ('Numerical solution: \Re(u_h)'), axis tight
@@ -76,6 +78,7 @@ ylabel('Time')
 subplot (1,2,2)
 h2 = pcolor (X, Y, real(problem_data.uex (X,Y)));
 colorbar
+colormap jet
 h2.EdgeColor = 'none';
 h2.FaceColor = 'interp';
 title ('Exact solution: \Re(u)'), axis tight

@@ -74,6 +74,7 @@ sp_plot_solution (real(u), space, geometry, [40 40 40], [20 20 20]);
 % subplot (1,2,1)
 % h1 = pcolor (X, Y, real(eu));
 % colorbar
+% colormap jet
 % h1.EdgeColor = 'none';
 % h1.FaceColor = 'interp';
 % title ('Numerical solution: \Re(u_h)'), axis tight
@@ -82,6 +83,7 @@ sp_plot_solution (real(u), space, geometry, [40 40 40], [20 20 20]);
 % subplot (1,2,2)
 % h2 = pcolor (X, Y, real(problem_data.uex (X,Y)));
 % colorbar
+% colormap jet
 % h2.EdgeColor = 'none';
 % h2.FaceColor = 'interp';
 % title ('Exact solution: \Re(u)'), axis tight

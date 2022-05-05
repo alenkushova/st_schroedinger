@@ -43,3 +43,26 @@ legend('Location','southeast')
 title('Error convergence for solution with Matlab backslash')
 xlabel('h')
 ylabel('|\Re(u)-\Re(u_h)|')
+
+%% Discrete strong formulation error
+figure ('Units', 'pixels', 'Position', [150 200 1000 350])
+for d = 1 : 7
+    err_l2 = [];  NN = [];
+for i = 1 : 6
+    N = 2^(i+2);
+    % load the workspace
+    s = ['Discrete strong formulation\test_schrodinger_degree_' num2str(d) '_subs_' num2str(N) '.mat'];    
+    load(s);
+    NN = [NN 1/N];
+%         % save errors: this saves the error i already computed
+    err_l2  = [err_l2 error_l2];
+end
+    deg = ['p = ' num2str(d)];
+    loglog(NN,err_l2,'-o','Linewidth',1.5,'DisplayName',deg)
+    grid on, hold on
+end
+legend('Location','southeast')
+loglog(NN,(NN)/20,'--sk','Linewidth',1.5,'DisplayName','h')
+title('Error convergence for solution with Discrete Strong Formulation')
+xlabel('h')
+ylabel('|\Re(u)-\Re(u_h)|')

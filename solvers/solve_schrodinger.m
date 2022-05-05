@@ -59,37 +59,55 @@ end
 geometry = geo_load(xt_geo_name);
 x_geo    = geo_load(x_geo_name);
 t_geo    = geo_load(t_geo_name);
+n = numel(nsub);
 
 %trial space-time knots 
 [knots, zeta]= kntrefine(geometry.nurbs.knots, nsub-1, trial_degree, trial_regularity);
 knots = kntunclamp(knots, trial_degree, trial_regularity, prdc_sides);
 
+[x_knots, x_zeta]= kntrefine(x_geo.nurbs.knots, nsub(1:n-1)-1,...
+                             trial_degree(1:n-1), trial_regularity(1:n-1));
+x_knots = kntunclamp(x_knots, trial_degree(1:n-1), trial_regularity(1:n-1), prdc_sides);
+
+[t_knots, t_zeta]= kntrefine(t_geo.nurbs.knots,...
+                    nsub(n)-1, trial_degree(n), trial_regularity(n));
+t_knots = kntunclamp(t_knots, trial_degree(n), trial_regularity(n), prdc_sides);
+
 %test space-time knots
 [test_knots, test_zeta]= kntrefine(geometry.nurbs.knots, nsub-1, test_degree, test_regularity);
 test_knots = kntunclamp(test_knots, test_degree, test_regularity, prdc_sides);
+
+[test_x_knots, test_x_zeta]= kntrefine(x_geo.nurbs.knots, nsub(1:n-1)-1,...
+                             test_degree(1:n-1), test_regularity(1:n-1));
+test_x_knots = kntunclamp(test_x_knots, test_degree(1:n-1), test_regularity(1:n-1), prdc_sides);
+
+[test_t_knots, test_t_zeta]= kntrefine(t_geo.nurbs.knots,...
+                    nsub(n)-1, test_degree(n), test_regularity(n));
+test_t_knots = kntunclamp(test_t_knots, test_degree(n), test_regularity(n), prdc_sides);
+
 
 % Construct msh structure
 rule     = msh_gauss_nodes (nquad);
 [qn, qw] = msh_set_quad_nodes (zeta, rule);
 msh      = msh_cartesian (zeta, qn, qw, geometry);
 
-[xqn, xqw] = msh_set_quad_nodes (zeta(1), rule(1));
-x_msh   = msh_cartesian (zeta(1), xqn, xqw, x_geo);
+[xqn, xqw] = msh_set_quad_nodes (x_zeta, rule(1:n-1));
+x_msh   = msh_cartesian (x_zeta, xqn, xqw, x_geo);
 
-[tqn, tqw] = msh_set_quad_nodes (zeta(2), rule(2));
-t_msh   = msh_cartesian (zeta(2), tqn, tqw, t_geo);
+[tqn, tqw] = msh_set_quad_nodes (t_zeta, rule(n));
+t_msh   = msh_cartesian (t_zeta, tqn, tqw, t_geo);
 
 % Construct msh structures
-space        = sp_bspline (knots, trial_degree, msh);
-x_space      = sp_bspline (knots(1), trial_degree(1),x_msh);
-t_space      = sp_bspline (knots(2), trial_degree(2),t_msh);
-test_space   = sp_bspline (test_knots, test_degree, msh);
-x_test_space = sp_bspline (test_knots(1), test_degree(1),x_msh);
-t_test_space = sp_bspline (test_knots(2), test_degree(2),t_msh);
+space   = sp_bspline (knots, trial_degree, msh);
+x_space = sp_bspline (x_knots, trial_degree(1:n-1), x_msh);
+t_space = sp_bspline (t_knots, trial_degree(n), t_msh);
+test_space   = sp_bspline (knots, test_degree, msh);
+x_test_space = sp_bspline (test_x_knots, test_degree(1:n-1), x_msh);
+t_test_space = sp_bspline (test_t_knots, test_degree(n), t_msh);
 
 % Assemble matrices
 Wt = op_gradu_v_tp (t_space, t_test_space, t_msh); %Controllo come è fatto!
-Wt = Wt';
+Wt = Wt.';
 Mt = op_u_v_tp (t_space, t_test_space, t_msh);
 Ms = op_u_v_tp (x_space, x_test_space, x_msh);
 Ks = op_laplaceu_v_tp (x_space, x_test_space, x_msh);

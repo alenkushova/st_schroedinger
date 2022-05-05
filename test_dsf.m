@@ -6,13 +6,13 @@ clc
 % 1) PHYSICAL DATA OF THE PROBLEM
 clear problem_data  
 % in this moment this value is fixed! Need to define better solver!
-T = 1; %change T --> must modify 'geo_square_cilinder.txt' too !
-%T = 2 % must load 'geo_rectangle.txt'
+% T = 1; %change T --> must modify 'geo_square_cilinder.txt' too !
+T = 2; % must load 'geo_rectangle.txt'
 problem_data.T = T ;      % Final time.
 
 % Physical domain, defined as NURBS map given in a text file
-problem_data.xt_geo_name = 'geo_square.txt'; %here final time is T = 1.
-%problem_data.xt_geo_name = 'geo_rectangle.txt'; %here final time is T = 2.
+% problem_data.xt_geo_name = 'geo_square.txt'; %here final time is T = 1.
+problem_data.xt_geo_name = 'geo_rectangle.txt'; %here final time is T = 2.
 problem_data.x_geo_name = nrbline ([0 0], [1 0]);
 problem_data.t_geo_name = nrbline ([0 0], [T 0]);
 
@@ -43,8 +43,8 @@ problem_data.eta = 1;
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
-p = 1;
-n = 64; % number of subdivisions in space direction!
+p = 3;
+n = 128; % number of subdivisions in space direction!
 method_data.trial_degree     = [p+2 p+1]; % Degree of the trial splines (last is time dir)
 method_data.trial_regularity = [p+1 p]; % Regularity of the trial splines
 method_data.test_degree      = [p p]; % Degree of the test splines (last is time dir)
