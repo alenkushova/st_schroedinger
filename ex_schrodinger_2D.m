@@ -57,11 +57,11 @@ toc
 %% 4) POST-PROCESSING
 % 4.1) EXPORT TO PARAVIEW
 
-% output_file = 'Schroedinger_st_2D';
+output_file = 'Schroedinger_st_2D';
 
 vtk_pts = {linspace(0, 1, 20), linspace(0, 1, 20), linspace(0, 1, 20)};
-% fprintf ('The result is saved in the file %s \n \n', output_file);
-% sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
+fprintf ('The result is saved in the file %s \n \n', output_file);
+sp_to_vtk (u, space, geometry, vtk_pts, output_file, 'u')
 
 figure
 sp_plot_solution (real(u), space, geometry, [40 40 40], [20 20 20]);
