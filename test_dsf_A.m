@@ -58,7 +58,7 @@ method_data.solver     = 'FD';     % Fast Diag 'FD' or Matlab Backslash 'M'
 
 %% 3) CALL TO THE SOLVER
 tic
-[geometry, msh, space, u] = solve_schrodinger (problem_data, method_data);
+[geometry, msh, space, u] = solve_schrodinger_dsf (problem_data, method_data);
 toc
 %% 4) POST-PROCESSING
 % 4.1) EXPORT TO PARAVIEW
