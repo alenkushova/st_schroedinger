@@ -8,6 +8,7 @@ addpath (genpath ('nurbs'))
 addpath (genpath ('geopdes_hierarchical'))
 addpath (genpath ('data'))
 addpath (genpath ('solvers'))
+addpath (genpath ('examples'))
 
 close 
 clear
