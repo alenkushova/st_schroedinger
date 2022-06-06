@@ -44,14 +44,13 @@ problem_data.eta = 1;
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
 p = 3;
-n = 128; % number of subdivisions in space direction!
-method_data.trial_degree     = [p+2 p+1]; % Degree of the trial splines (last is time dir)
-method_data.trial_regularity = [p+1 p]; % Regularity of the trial splines
-method_data.test_degree      = [p p]; % Degree of the test splines (last is time dir)
-method_data.test_regularity  = [p p] - 1; % Regularity of the test splines
-method_data.nsub       = [n T*n]; % Number of subdivisions
-method_data.nquad      = [p+2 p+1] + 1; % Points for the Gaussian quadrature rule
-method_data.solver     = 'FD';     % Fast Diag 'FD' or Matlab Backslash 'M'
+n = 32; % number of subdivisions in space direction!
+method_data.trial_degree     = [p+2 p+1];                                  % Degree of the trial splines (last is time dir)
+method_data.trial_regularity = [p+1 p];                                    % Regularity of the trial splines
+method_data.test_degree      = [p p];                                      % Degree of the test splines (last is time dir)
+method_data.test_regularity  = [p p] - 1;                                  % Regularity of the test splines
+method_data.nsub       = [n T*n];                                          % Number of subdivisions
+method_data.nquad      = [p+2 p+1] + 1;                                    % Points for the Gaussian quadrature rule
 
 %% 3) CALL TO THE SOLVER
 tic

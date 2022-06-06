@@ -44,7 +44,7 @@
 % See also EX_SCHRODINGER_A or EX_SCHRODINGER_B for examples.
 %
 function [GEO, MSH, SPACE, u] = ...
-              solve_schrodinger_st (problem_data, method_data)
+              solve_schrodinger_old (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
 data_names = fieldnames (problem_data);

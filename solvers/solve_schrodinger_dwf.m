@@ -44,7 +44,7 @@
 % See also EX_SCHRODINGER_A or EX_SCHRODINGER_B for examples.
 %
 function [geometry, msh, space, u] = ...
-              solve_schrodinger_st_new (problem_data, method_data)
+              solve_schrodinger_dwf (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
 data_names = fieldnames (problem_data);

@@ -1,4 +1,4 @@
-% SOLVE_SCHRODINGER_ST_New: Solve a Schrodinger problem with a B-spline
+% SOLVE_SCHRODINGER_dsf: Solve a Schrodinger problem with a B-spline
 %                               discretization in a space-time isoparametric
 %                               approach . 
 %
@@ -12,7 +12,7 @@
 %
 % USAGE:
 %
-%  [geometry, msh, space, u] = solve_schrodinger (problem_data, method_data)
+%  [geometry, msh, space, u] = solve_schrodinger_dsf (problem_data, method_data)
 %
 % INPUT:
 %
@@ -45,7 +45,7 @@
 % See also EX_SCHRODINGER_A or EX_SCHRODINGER_B for examples.
 %
 
-function [geometry, msh, space, u] = solve_schrodinger(problem_data, method_data)
+function [geometry, msh, space, u] = solve_schrodinger_dsf (problem_data, method_data)
 % Extract the fields from the data structures into local variables
 data_names = fieldnames (problem_data);
 for iopt  = 1:numel (data_names)
@@ -101,16 +101,26 @@ t_msh   = msh_cartesian (t_zeta, tqn, tqw, t_geo);
 space   = sp_bspline (knots, trial_degree, msh);
 x_space = sp_bspline (x_knots, trial_degree(1:n-1), x_msh);
 t_space = sp_bspline (t_knots, trial_degree(n), t_msh);
-test_space   = sp_bspline (knots, test_degree, msh);
+test_space   = sp_bspline (test_knots, test_degree, msh);
 x_test_space = sp_bspline (test_x_knots, test_degree(1:n-1), x_msh);
 t_test_space = sp_bspline (test_t_knots, test_degree(n), t_msh);
 
 % Assemble matrices
-Wt = op_gradu_v_tp (t_space, t_test_space, t_msh); %Controllo come è fatto!
+Wt = op_gradu_v_tp (t_space, t_test_space, t_msh); 
 Wt = Wt.';
 Mt = op_u_v_tp (t_space, t_test_space, t_msh);
 Ms = op_u_v_tp (x_space, x_test_space, x_msh);
 Ks = op_laplaceu_v_tp (x_space, x_test_space, x_msh);
+
+% Debug test for OP_LAPLACEU_V_TP:
+% diff_op1 = op_geom_exterior ({x_knots}, trial_degree(1:n-1));
+% diff_op2 = op_geom_exterior ({x_knots(2:end-1)}, trial_degree(1:n-1)-1);
+% D1 = diff_op1{1};
+% D2 = diff_op2{1};
+% test_Ms = op_u_v_tp (x_test_space, x_test_space, x_msh);
+% new_Ks = test_Ms*D2*D1;
+% max(max(abs(Ks-new_Ks)))
+% This has shown an error of the kind 2.8422e-14. 
 
 % we need to avoid this matrix implementation:
 A = gmm*kron(Wt,Ms) - eta*kron(Mt,Ks);
