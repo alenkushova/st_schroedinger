@@ -173,7 +173,6 @@ switch solver
 %         sol1 = U'*F(int_dofs); %STEP 2
 %         sol2 = Arrow\sol1; % STEP 3 
 %         u(int_dofs) = U*sol2; % STEP 4 - Num. solution for Schrodinger
-        
         nt = size(Ut,1);
         Ns = size(Us,1);
         Ids = ones(Ns,1);
@@ -182,18 +181,19 @@ switch solver
         B   = gmm*(g.').*Ids;
         S   = H(:,nt) - sum((((B').')./H(:,1:nt-1)).*B,2);
         Fnew = reshape(F(int_dofs),Ns,nt);
-% apply the generalized eigenvector matrix _________________ STEP 2 
+% apply the generalized eigenvector matrix _________________ STEP 1 
         tilde_Fnew = Us'*Fnew*((Ut').'); 
-% solve the arrow like system ______________________________ STEP 3 
+% solve the arrow like system ______________________________ STEP 2 
         tilde_u_nt = (-sum((((B').').*tilde_Fnew(:,1:nt-1)./H(:,1:nt-1)),2)...
                      + tilde_Fnew(:,nt))./S;
         tilde_u = [(tilde_Fnew(:,1:nt-1)-B.*tilde_u_nt)./H(:,1:nt-1) tilde_u_nt];
         %tilde_u = Arrow\tilde_Fnew(:); This works for sure
-% apply the generalized eigenvector matrix _________________ STEP 4
+% apply the generalized eigenvector matrix _________________ STEP 3
         tilde_u = reshape(tilde_u,Ns,nt); %non dovrebbe servire.
-        u_sol = tmprod(tilde_u,{Ut Us},[2 1]);
+%         u_sol = tmprod(tilde_u,{Ut Us},[2 1]); % may not be gpu Available
+        u_sol = Us*tilde_u*(Ut.');
         u(int_dofs) = u_sol; % Numerical solution for Schrodinger.
-        
+
     case 'M'
         A = gmm*kron(Wt,Ms)+eta*kron(Mt,Ks);
         u(int_dofs) = A(int_dofs,int_dofs)\F(int_dofs);
