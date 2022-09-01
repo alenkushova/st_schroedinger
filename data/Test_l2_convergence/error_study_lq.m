@@ -1,5 +1,5 @@
 %% Analyze the errors into a plot! L2-convergence for fixed M = 625
-close all
+
 figure ('Units', 'pixels', 'Position', [150 200 1000 350])
 for grad = 1 : 5
     err_l2 = [];  NN = [];
@@ -20,7 +20,7 @@ end
     clear grad s
 end
 legend('Location','southeast')
-loglog(NN,1.7*NN.^(0.25) ,'-sk','Linewidth',1.5,'DisplayName','h^{0.2}')
+loglog(NN,2.2*NN.^(0.25) ,'-sk','Linewidth',1.5,'DisplayName','h^{0.25}')
 title('Error convergence for solution with Fast Diagonalization')
 xlabel('h')
 ylabel('|\Re(u)-\Re(u_h)|_{L^2}')

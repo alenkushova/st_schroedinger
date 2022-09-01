@@ -1,8 +1,7 @@
 %% EX_SCHRODINGER: solve the Schroedinger problem in one dimension. (S-T)
 clear 
-close all
 clc
-M = 3125;
+M = 1250;
 
 % 1) PHYSICAL DATA OF THE PROBLEM
 clear problem_data  
@@ -25,9 +24,10 @@ problem_data.x_drchlt_sides = [1 2 ];  % Dirichlet
 problem_data.prdc_sides     = []; % Periodic
 
 % Exact solution:
-[uex, grad_uex, dudx, dudt, f] = Fourier_expansion(M);
-% solutions = ['solutions' num2str(M) '.mat'];
-% load(solutions); % or you can load previously built solutions and rhs.
+% [uex, grad_uex, dudx, dudt, f] = Fourier_expansion(M);
+% save('solutions1250.mat','uex', 'grad_uex', 'dudx', 'dudt', 'f')
+solutions = ['solutions' num2str(M) '.mat'];
+load(solutions); % or you can load previously built solutions and rhs.
 
 problem_data.uex     = @(x, t) uex(x,t);
 problem_data.graduex = @(x, t) grad_uex(x,t);
@@ -42,12 +42,12 @@ problem_data.eta = 1;
 
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
-p = 1;   %Polynomial degree
-n = 16;  % number of subdivisions in space direction!
+p = 3;   %Polynomial degree
+n = 128;  % number of subdivisions in space direction!
 method_data.degree     = [p p]; % Degree of the splines (last is time dir)
 method_data.regularity = method_data.degree-1; % Regularity of the splines
 method_data.nsub       = [n T*n]; % Number of subdivisions
-method_data.nquad      = [20 20];%method_data.degree+1; % Points for the Gaussian quadrature rule
+method_data.nquad      = [10 10];%method_data.degree+1; % Points for the Gaussian quadrature rule
 method_data.solver     = 'FD';     % Fast Diag 'FD' or Matlab Backslash 'M'
 
 %% 3) CALL TO THE SOLVER
@@ -55,6 +55,11 @@ fprintf ('Solving the problem with DWF and FD... \n')
 tic
 [geometry, msh, space, u] = solve_schrodinger_dwf (problem_data, method_data);
 toc
+
+%compute the L2 projection of the solution
+M  = op_u_v_tp (space, space, msh );
+rhs= op_f_u_tp (space, msh, uex);
+Pu = M\rhs;
 
 %% 4) POST-PROCESSING
 % 4.1) EXPORT TO PARAVIEW
@@ -93,11 +98,16 @@ fprintf ('Computing the errors in L2 and H1 norms... \n')
 Uex = @(x, t) real(problem_data.uex(x, t));
 GradUex = @(x, t) real(problem_data.graduex(x, t));
 tic
-[error_h1, error_l2] = sp_h1_error (space, msh, real(u), Uex, GradUex)
+[u_error_h1, u_error_l2] = sp_h1_error (space, msh, real(u), Uex, GradUex)
 toc
+tic
+[Pu_error_h1, Pu_error_l2] = sp_h1_error (space, msh, real(Pu), Uex, GradUex)
+toc
+
+
 %% 6) Save solution
-n = method_data.nsub;
-d = method_data.degree;
+n = method_data.nsub(1);
+d = method_data.degree(1);
 filename = ['test_schrodinger_degree_' num2str(d) '_subs_' num2str(n) '.mat'];
 save(filename)
 fprintf ('The result is saved in the file: %s \n \n', filename);

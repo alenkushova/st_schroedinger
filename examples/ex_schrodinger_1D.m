@@ -44,7 +44,7 @@ problem_data.eta = 1;
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
 p = 3; % degree of B-splines
-n = 1024; % number of subdivisions in space direction!
+n = 128; % number of subdivisions in space direction!
 method_data.degree     = [p p]; % Degree of the splines (last is time dir)
 method_data.regularity = method_data.degree-1; % Regularity of the splines
 method_data.nsub       = [n T*n]; % Number of subdivisions
@@ -52,7 +52,7 @@ method_data.nquad      = method_data.degree+1; % Points for the Gaussian quadrat
 method_data.solver     = 'FD';     % Fast Diag 'FD' or Matlab Backslash 'M'
 
 %% 3) CALL TO THE SOLVER
-[geometry, msh, space, u] = parallel_solver (problem_data, method_data);
+[geometry, msh, space, u] = solve_schrodinger_dwf (problem_data, method_data);
 
 %% 4) POST-PROCESSING
 % 4.1) EXPORT TO PARAVIEW

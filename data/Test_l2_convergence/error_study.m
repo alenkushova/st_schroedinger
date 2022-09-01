@@ -1,12 +1,12 @@
-%% Analyze the errors into a plot! L2-convergence for fixed M = 625
-close all
+%% Analyze the errors into a plot! L2-convergence for fixed M = 1250
+
 figure ('Units', 'pixels', 'Position', [150 200 1000 350])
-for grad = 1 : 5
+for grad = 1 : 4
     err_l2 = [];  NN = [];
 for i = 1 : 5
     N = 2^(i+2);
     % load the workspace
-    s = ['Truncated expansion for M625\test_schrodinger_degree_' num2str(grad)...
+    s = ['Truncated expansion for M1250\test_schrodinger_degree_' num2str(grad)...
            '  ' num2str(grad) '_subs_' num2str(N) '  ' num2str(2*N) '.mat'];    
     load(s);
     NN = [NN 1/N];
@@ -20,20 +20,20 @@ end
     clear d s
 end
 legend('Location','southeast')
-%loglog(NN,(6*1./sqrt(NN)).^(d+1) ,'-s','Linewidth',1.5)
+loglog(NN,2.2*NN.^(0.25) ,'-sk','Linewidth',1.5,'DisplayName','h^{0.25}')
 title('Error convergence for solution with Fast Diagonalization')
 xlabel('h')
 ylabel('|\Re(u)-\Re(u_h)|_{L^2}')
 
 
-%% H1-convergence for fixed M = 625
+%% H1-convergence for fixed M = 1250
 figure ('Units', 'pixels', 'Position', [150 200 1000 350])
-for grad = 1 : 5
+for grad = 1 : 4
     err_h1 = [];  NN = [];
 for i = 1 : 5
     N = 2^(i+2);
     % load the workspace
-    s = ['Truncated expansion for M625\test_schrodinger_degree_' num2str(grad)...
+    s = ['Truncated expansion for M1250\test_schrodinger_degree_' num2str(grad)...
            '  ' num2str(grad) '_subs_' num2str(N) '  ' num2str(2*N) '.mat'];    
     load(s);
     NN = [NN 1/N];

@@ -44,8 +44,7 @@
 % See also EX_SCHRODINGER_A or EX_SCHRODINGER_B for examples.
 %
 function [geometry, msh, space, u] = ...
-              solve_schrodinger_dwf (problem_data, method_data)
-
+              solve_schrodinger_dwf (problem_data, method_data) 
 % Extract the fields from the data structures into local variables
 data_names = fieldnames (problem_data);
 for iopt  = 1:numel (data_names)
@@ -96,10 +95,11 @@ Mt = op_u_v_tp (t_space, t_space, t_msh);
 Ms = op_u_v_tp (x_space, x_space, x_msh);
 Ks = op_gradu_gradv_tp (x_space, x_space, x_msh);
 % in  order to avoid this matrix implementation:
-%A = gmm*kron(Wt,Ms)+eta*kron(Mt,Ks);
-%F = ones(size(A,1),1);
+% A = gmm*kron(Wt,Ms)+eta*kron(Mt,Ks);
+% NN = size(Ws,1)^3*size(Wt,1);
+% F = zeros(size(Ws,1)^3*size(Wt,1),1);
 F = op_f_v_tp (space, msh, f); %here is the projection of f.
- 
+
 % Apply Dirichlet bpoundary conditions
 u = zeros (space.ndof, 1);
 [u_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space, msh, h, drchlt_sides);
@@ -110,6 +110,7 @@ mat_u = reshape(u,x_space.ndof,t_space.ndof);
 v1 = gmm*Ms*mat_u*(Wt.') + eta*Ks*mat_u*(Mt.');
 v1 = v1(:);
 F(int_dofs) = F(int_dofs) - v1(int_dofs); 
+
 [~, x_drchlt_dofs] = sp_drchlt_l2_proj (x_space, x_msh, x_h, x_drchlt_sides);
 x_int_dofs = setdiff (1:x_space.ndof, x_drchlt_dofs);
 
@@ -165,19 +166,11 @@ switch solver
         Ut = [Ut0 r;0*r' rho];
         Lambda= sparse([diag(Dt0) g; -g' sigma]); 
         
-% % MUST NOT USE THIS:
-%        U     = kron(Ut,Us); %huge worning here!!!!!
-%        Arrow = gmm*kron(Lambda,speye(size(Ds,1)))...
-%                       +eta*kron(speye(size(Lambda,1)),sparse(Ds));
-% % Solve the system:
-%         sol1 = U'*F(int_dofs); %STEP 2
-%         sol2 = Arrow\sol1; % STEP 3 
-%         u(int_dofs) = U*sol2; % STEP 4 - Num. solution for Schrodinger
         nt = size(Ut,1);
         Ns = size(Us,1);
         Ids = ones(Ns,1);
         ds  = diag(Ds);
-        H   = gmm*diag(Lambda).'+eta*ds;
+        H   = gmm*diag(Lambda).' + eta*ds;
         B   = gmm*(g.').*Ids;
         S   = H(:,nt) - sum((((B').')./H(:,1:nt-1)).*B,2);
         Fnew = reshape(F(int_dofs),Ns,nt);
