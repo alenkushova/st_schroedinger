@@ -9,7 +9,7 @@ addpath (genpath ('geopdes_hierarchical'))
 addpath (genpath ('data'))
 addpath (genpath ('solvers'))
 addpath (genpath ('examples'))
-addpath (genpath ('inf_sup_test'))
+addpath (genpath ('new_infsup_test'))
 
 close 
 clear

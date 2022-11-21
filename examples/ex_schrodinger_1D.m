@@ -32,6 +32,8 @@ problem_data.uex     = @(x, t) (a0*exp(-1i*(x.^2 + t.^2)/(omg^2)));
 problem_data.graduex = @(x, t) (cat (1, ...
                 reshape (-2i*x/(omg^2).*problem_data.uex(x, t) , [1, size(x)]), ...
                 reshape (-2i*t/(omg^2).*problem_data.uex(x, t) , [1, size(t)])));
+problem_data.lapuex = @(x, t) (-4*(x.^2)/(omg^2) - 2i/(omg^2)).*problem_data.uex(x, t);
+
 % Source term
 problem_data.f = @(x, t) ...
             (2i*omg^2 + 4*x.^2 + 2*omg^2*t)/omg^4.*problem_data.uex(x,t);
@@ -40,11 +42,10 @@ problem_data.x_h = @(x, ind) zeros (size (x)); % auxiliary function.
 problem_data.gmm = 1i;
 problem_data.eta = 1;
 
-
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
 p = 3; % degree of B-splines
-n = 128; % number of subdivisions in space direction!
+n = 64; % number of subdivisions in space direction!
 method_data.degree     = [p p]; % Degree of the splines (last is time dir)
 method_data.regularity = method_data.degree-1; % Regularity of the splines
 method_data.nsub       = [n T*n]; % Number of subdivisions
@@ -89,7 +90,9 @@ ylabel('Time')
 % compute the error for the real part:
 Uex = @(x, t) real(problem_data.uex(x, t));
 GradUex = @(x, t) real(problem_data.graduex(x, t));
-[error_h1, error_l2] = sp_h1_error (space, msh, real(u), Uex, GradUex)
+LaplaceUex = @(x, t) real(problem_data.lapuex(x, t));
+[error_Graph, error_l2_new] = schroedinger_graph_error(space,msh,real(u), Uex, GradUex, LaplaceUex)
+%[error_h1, error_l2] = sp_h1_error (space, msh, real(u), Uex, GradUex)
 
 %% 6) Save solution
 n = method_data.nsub;
