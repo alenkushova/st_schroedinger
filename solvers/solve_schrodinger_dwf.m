@@ -105,6 +105,7 @@ u = zeros (space.ndof, 1);
 [u_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space, msh, h, drchlt_sides);
 u(drchlt_dofs) = u_drchlt;
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);
+
 % we modify the rhs this way:
 mat_u = reshape(u,x_space.ndof,t_space.ndof);
 v1 = gmm*Ms*mat_u*(Wt.') + eta*Ks*mat_u*(Mt.');

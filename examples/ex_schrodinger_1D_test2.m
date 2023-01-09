@@ -93,7 +93,7 @@ ylabel('Time')
 Uex = @(x, t) real(problem_data.uex(x, t));
 GradUex = @(x, t) real(problem_data.graduex(x, t));
 LaplaceUex = @(x, t) real(problem_data.lapuex(x, t));
-[error_Graph, error_l2_new] = schroedinger_graph_error(space,msh,real(u), Uex, GradUex, LaplaceUex)
+[error_Graph, error_l2_new] = schroedinger_graph_error(space, msh, real(u), Uex, GradUex, LaplaceUex)
 %[error_h1, error_l2] = sp_h1_error (space, msh, real(u), Uex, GradUex)
 
 %% 6) Save solution

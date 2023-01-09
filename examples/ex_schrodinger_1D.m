@@ -6,12 +6,14 @@ clc
 % 1) PHYSICAL DATA OF THE PROBLEM
 clear problem_data  
 % in this moment this value is fixed! Need to define better solver!
-T = 2; %change T --> must modify 'geo_square_cilinder.txt' too !
+T = 1; %change T --> must modify 'geo_square_cilinder.txt' too !
 %T = 10 %_______________________________________________________to use 'geo_square_cilinder.txt'
 problem_data.T = T ;      % Final time.
 
 % Physical domain, defined as NURBS map given in a text file
-problem_data.xt_geo_name = 'geo_rectangle.txt'; %here final time is T = 1.
+%problem_data.xt_geo_name = 'geo_rectangle.txt'; %here final time is T = 2.
+problem_data.xt_geo_name = 'geo_square.txt'; %here final time is T = 1.
+
 %problem_data.xt_geo_name = 'geo_square_cilinder.txt'; %________to use 'geo_square_cilinder.txt'
 problem_data.x_geo_name = nrbline ([0 0], [1 0]);
 problem_data.t_geo_name = nrbline ([0 0], [T 0]);
@@ -45,7 +47,7 @@ problem_data.eta = 1;
 % 2) CHOICE OF THE DISCRETIZATION PARAMETERS
 clear method_data
 p = 3; % degree of B-splines
-n = 64; % number of subdivisions in space direction!
+n = 8; % number of subdivisions in space direction!
 method_data.degree     = [p p]; % Degree of the splines (last is time dir)
 method_data.regularity = method_data.degree-1; % Regularity of the splines
 method_data.nsub       = [n T*n]; % Number of subdivisions
@@ -88,16 +90,15 @@ ylabel('Time')
 
 %% 5) DISPLAY ERRORS of the computed solution in the L2 and H1 norm
 % compute the error for the real part:
-Uex = @(x, t) real(problem_data.uex(x, t));
-GradUex = @(x, t) real(problem_data.graduex(x, t));
-LaplaceUex = @(x, t) real(problem_data.lapuex(x, t));
-[error_Graph, error_l2_new] = schroedinger_graph_error(space,msh,real(u), Uex, GradUex, LaplaceUex)
+Uex = @(x, t) (problem_data.uex(x, t));
+rhs = @(x, t) (problem_data.f(x, t));
+[error_Graph, error_l2_new] = schroedinger_graph_error(space, msh, u, Uex, rhs)
 %[error_h1, error_l2] = sp_h1_error (space, msh, real(u), Uex, GradUex)
 
 %% 6) Save solution
 n = method_data.nsub;
 d = method_data.degree;
-filename = ['test_schrodinger_degree_' num2str(d) '_subs_' num2str(n) '.mat'];
+filename = ['bs_test_schrodinger_degree_' num2str(d) '_subs_' num2str(n) '.mat'];
 save(filename)
 fprintf ('The result is saved in the file: %s \n \n', filename);
 

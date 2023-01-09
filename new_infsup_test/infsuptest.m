@@ -1,6 +1,8 @@
 % INF_SUP_TEST for Schroedinger space-time discrete weak formulaiton
-%  p   =  degree of B-splines
-%  nel =  number of subdivisions in space direction!
+%  p     =  degree of B-splines
+%  nel   =  number of subdivisions in space direction!
+%  'Trial_N'= trial space norm: string 'l2' for L^2-norm, 'G' for graph norm. 
+%  'Test_N' = trial space norm: string 'l2' for L^2-norm, 'G' for graph norm.  
 % 
 % This tests if the infsup discrete condition is achieved.
 % 
@@ -12,7 +14,7 @@
 % It also can compute the eigenfunction associated to the smallestabs
 % eigenvalue, in order to visualize its behaviour. 
 function [mu, D, geo, msh, space, eigvect,lambda2_Mw_w, v, Av] = ...
-                                                       infsuptest (p, nel)
+                      infsuptest (p, nel, Trial_N, Test_N)
 % Boundaries.
 trial_drchlt_sides   = [1 2 3];% Dirichlet.
 test_drchlt_sides   = [1 2 3];% Dirichlet.
@@ -27,19 +29,26 @@ dataset = set_discretization(input_args);
 A  = op_schroedinger_1st_order(dataset.xmsh,         dataset.tmsh,...
                                dataset.xspace_trial, dataset.tspace_trial,...
                                dataset.xspace_test,  dataset.tspace_test );
-% trial L2 norm test L2
-Mw = op_u_v_tp (dataset.xtspace_test, dataset.xtspace_test, dataset.xtmsh);
-Mv = op_u_v_tp (dataset.xtspace_trial, dataset.xtspace_trial, dataset.xtmsh);
+% Tiral norm  
+switch Trial_N 
+    case 'l2'
+        Mv = op_u_v_tp (dataset.xtspace_trial, dataset.xtspace_trial, dataset.xtmsh);
+    case 'G'
+        Mv = op_schroedinger_graph_norm (dataset.xtmsh, dataset.xmsh, dataset.tmsh,...
+             dataset.xtspace_trial, dataset.xspace_trial, dataset.tspace_trial);
+end
+% Test norm
+switch Test_N 
+    case 'l2'
+        Mw = op_u_v_tp (dataset.xtspace_test, dataset.xtspace_test, dataset.xtmsh);
+    case 'G'
+        Mw = op_schroedinger_graph_norm (dataset.xtmsh, dataset.xmsh, dataset.tmsh,...
+             dataset.xtspace_test, dataset.xspace_test, dataset.tspace_test);
+end
+%Always symmetrize the mass matrices
+Mv = (Mv+Mv')/2;
+Mw = (Mw+Mw')/2;
 
-% trial Graph norm test L2
-% Mw = op_u_v_tp (dataset.xtspace_test, dataset.xtspace_test, dataset.xtmsh);
-% Mv = op_schroedinger_graph_norm (dataset.xtmsh, dataset.xmsh, dataset.tmsh,...
-%         dataset.xtspace_trial, dataset.xspace_trial, dataset.tspace_trial);
-
-% trial L2 and test Graph norm
-% Mv = op_u_v_tp (dataset.xtspace_trial, dataset.xtspace_trial, dataset.xtmsh);
-% Mw = op_schroedinger_graph_norm (dataset.xtmsh, dataset.xmsh, dataset.tmsh,...
-%        dataset.xtspace_test, dataset.xspace_test, dataset.tspace_test);
 
 % Extract internal dofs.
 [~, trial_drchlt_dofs] = sp_drchlt_l2_proj (dataset.xtspace_trial, dataset.xtmsh, h, trial_drchlt_sides);

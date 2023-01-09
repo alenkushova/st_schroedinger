@@ -5,6 +5,8 @@ function [mu, W, D] = infsup_coercivity(A, Mv, Mw)
 % by solving an eigenvalue problem
 % A is the operator matrix, Mv and Mw are the
 % bilinear form giving the norm
-[W, D] = eigs ( A'*(Mw\A), Mv, 1, 'smallestabs');
+%[W, D] = eigs ( A'*(Mw\A), Mv, 1, 'smallestabs');
+F = @(u)  A'*(Mw\(A*u));
+[W, D] = eigs (F , size(A,1), Mv, 1, 'smallestabs');
 mu = sqrt(real(D));
 end
